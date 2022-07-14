@@ -1,7 +1,9 @@
 import { Request, Response, Router } from 'express';
 
+import { Controller } from './controllers'
+
 const router = Router();
 
-router.get('/', (req: Request, res: Response) => res.send('Hello world!'));
+router.post('/auth/register', Controller.auth.handleRegister)
 
 export { router };
