@@ -32,6 +32,45 @@ export class AuthValidation {
     password: data.password
   }))
 
+  static login = Joi.object({
+    email: Joi
+      .string()
+      .email()
+      .required(),
+    password: Joi
+      .string()
+      .required()
+  }).external(AuthValidation.checkCredentials)
+
+  static async checkCredentials (data: any) {
+    const user = await client.user.findFirst({
+      where: { email: data.email }
+    })
+
+    const passwordMatches = user ? await compare(data.password, user.password) : false
+
+    if (!passwordMatches) {
+      throw new Joi.ValidationError(
+        '"email" or "password" is incorrect',
+        [
+          {
+            message: '"email" or "password" is incorrect',
+            path: ['email', 'password'],
+            type: 'login.unauthorized',
+            context: {
+              key: null,
+              label: 'login',
+              value: data
+            }
+          }
+        ],
+        { value: data }
+      )
+    }
+
+    return user?.id
+  }
+
   static async checkEmailUniqueness (email: string) {
     const user = await client.user.findUnique({
       where: { email }

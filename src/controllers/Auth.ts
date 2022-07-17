@@ -31,4 +31,19 @@ export class AuthController {
       .status(201)
       .json({ accessToken })
   }
+
+  static async handleLogin (req: Request, res: Response) {
+    const data = await Schema.auth.login
+      .validateAsync(req.body, { abortEarly: false })
+
+    const refreshToken = generateRefreshToken(data)
+
+    res.cookie('refreshToken', refreshToken, { maxAge: 120960000, httpOnly: true })
+
+    const accessToken = generateAccessToken(data)
+
+    return res
+      .status(200)
+      .json({ accessToken })
+  }
 }
